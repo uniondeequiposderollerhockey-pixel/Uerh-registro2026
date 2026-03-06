@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="dCIdFy33o-mW304YmSsw_DJvhsWoRVf6ecfeejk8H1A" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Temporada 2026 - U.E.R.H. Liga</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-card: #111622;
+            --text-main: #ffffff;
+            --text-muted: #8b9bb4;
+            --border-red: #ea4335;
+            --border-blue: #4285f4;
+            --success: #27ae60;
+            --warning: #f1c40f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; background-color: var(--bg-dark); color: var(--text-main);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, rgba(66,133,244,0.15) 0%, rgba(10,14,23,0) 50%);
+        }
+
+        .main-container { width: 100%; max-width: 480px; padding: 20px; text-align: center; position: relative; }
+        .logo-main { font-size: 3.5rem; font-weight: 800; letter-spacing: 0.2em; margin: 0; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-subtext { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 25px; }
+
+        #auth-section, #form-section {
+            background-color: var(--bg-card); padding: 25px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .hidden { display: none !important; }
+
+        .logout-container { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .logout-link {
+            color: var(--border-red); font-size: 0.75rem; text-decoration: none;
+            cursor: pointer; border: 1px solid var(--border-red);
+            padding: 4px 10px; border-radius: 4px; transition: 0.3s;
+        }
+        .logout-link:hover { background: var(--border-red); color: white; }
+
+        .payment-info {
+            background: rgba(241, 196, 15, 0.05); border: 1px dashed var(--warning);
+            padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; font-size: 0.9rem;
+        }
+        .payment-info b { color: var(--warning); }
+
+        .price-tag { font-size: 1.2rem; font-weight: bold; color: var(--success); background: rgba(39, 174, 96, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--success); }
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { display: block; font-size: 0.85rem; margin-bottom: 5px; color: var(--text-muted); }
+        .input-field {
+            width: 100%; padding: 10px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; font-size: 1rem; box-sizing: border-box;
+        }
+        .img-preview { width: 100%; max-height: 100px; object-fit: contain; margin-top: 5px; display: none; border-radius: 4px; border: 1px dashed var(--text-muted); }
+
+        .btn-google {
+            background: transparent; color: white; border: 1px solid transparent;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 100%; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; position: relative;
+        }
+        .btn-google::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 6px; padding: 1px; background: linear-gradient(90deg, var(--border-blue), var(--border-red));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out; mask-composite: exclude;
+        }
+
+        .btn-submit {
+            width: 100%; padding: 15px; background: linear-gradient(90deg, #1d4ed8, #1e40af);
+            color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1 class="logo-main">UERH</h1>
+    <div class="logo-subtext">Unión de Equipos de Roller Hockey</div>
+
+    <div id="auth-section">
+        <h2 style="font-size: 1.1rem; margin-bottom: 20px;">Portal de Registro 2026</h2>
+        <button class="btn-google" onclick="loginWithGoogle()">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continuar con Google
+        </button>
+    </div>
+
+    <div id="form-section" class="hidden">
+        <div class="price-tag" id="price-display">Costo: $1200</div>
+
+        <div class="payment-info">
+            <b>Datos para el pago:</b><br>
+            A nombre de: <b>Josué Rojas</b><br>
+            Banco: <b>Itaú</b><br>
+            Caja de ahorro nº: <b>8806679</b><br>
+            <i>Una vez realizado el pago, completa el formulario.</i>
+        </div>
+        
+        <form onsubmit="saveRegistration(event)">
+            <div class="input-group">
+                <label class="input-label">Nombre del Jugador</label>
+                <input type="text" id="playerName" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Teléfono de Contacto</label>
+                <input type="tel" id="contactPhone" class="input-field" required minlength="8">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Equipo</label>
+                <select id="teamName" class="input-field" required>
+                    <option value="" disabled selected>Selecciona Equipo</option>
+                    <option value="Lobos">Lobos</option><option value="Thunderfast">Thunderfast</option>
+                    <option value="Tejones">Tejones</option><option value="Tcp">Tcp</option><option value="Usb">Usb</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Número de Camiseta</label>
+                <input type="number" id="shirtNum" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Foto Carnet</label>
+                <input type="file" accept="image/*" class="input-field" onchange="preview(this, 'p1')" required>
+                <img id="p1" class="img-preview">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Comprobante de Pago</label>
+                <input type="file" accept="image/*" class="input-field" onchange="preview(this, 'p2')" required>
+                <img id="p2" class="img-preview">
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-submit">Enviar Registro</button>
+        </form>
+
+        <div class="logout-container">
+            <a class="logout-link" onclick="logout()">Cerrar Sesión</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCREXn3CyGfcSJlOLYn79vvUbgsTs4tc6c",
+        authDomain: "uerh-t2026.firebaseapp.com",
+        databaseURL: "https://uerh-t2026-default-rtdb.firebaseio.com",
+        projectId: "uerh-t2026",
+        storageBucket: "uerh-t2026.firebasestorage.app",
+        messagingSenderId: "378184888320",
+        appId: "1:378184888320:web:72183df90850048fc028e5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    const costoFinal = (new Date() < new Date(2026, 3, 1)) ? 1200 : 1500;
+    document.getElementById('price-display').innerText = "Costo: $" + costoFinal;
+
+    async function loginWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        try { await auth.signInWithPopup(provider); } 
+        catch (e) { alert("Error: " + e.message); }
+    }
+
+    function logout() { auth.signOut(); }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+            document.getElementById('playerName').value = user.displayName || "";
+        } else {
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('form-section').classList.add('hidden');
+        }
+    });
+
+    function preview(input, id) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { 
+                const img = document.getElementById(id);
+                img.src = e.target.result; img.style.display = 'block'; 
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function saveRegistration(event) {
+        event.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const user = auth.currentUser;
+
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        try {
+            const checkUID = await db.ref('inscripciones/' + user.uid).once('value');
+            if (checkUID.exists()) {
+                alert("Ya tienes un registro activo.");
+                btn.innerText = "YA REGISTRADO"; return;
+            }
+
+            await db.ref('inscripciones/' + user.uid).set({
+                jugadorName: document.getElementById('playerName').value,
+                email: user.email,
+                phone: document.getElementById('contactPhone').value.trim(),
+                team: document.getElementById('teamName').value,
+                shirtNum: document.getElementById('shirtNum').value,
+                fotoCarnet: document.getElementById('p1').src,
+                fotoPago: document.getElementById('p2').src,
+                monto: costoFinal,
+                estado: "pendiente",
+                timestamp: new Date().toLocaleString()
+            });
+
+            alert("✅ ¡Registro Recibido!\n\nEstamos validando tu pago. Te notificaremos por correo electrónico una vez verificado el proceso.");
+            
+            // Cerrar sesión para permitir otros registros en el mismo equipo
+            auth.signOut();
+
+        } catch (e) {
+            alert("Error al enviar el registro. Por favor intenta de nuevo.");
+            btn.disabled = false; btn.innerText = "Enviar Registro";
+        }
+    }
+</script>
+</body>
+</html>
