@@ -13,6 +13,7 @@
         :root {
             --bg-dark: #0a0e17; --bg-card: #111622; --text-main: #ffffff;
             --text-muted: #8b9bb4; --success: #27ae60; --danger: #ea4335;
+            --color-blue: #4285f4; --color-red: #ea4335;
         }
 
         body {
@@ -24,6 +25,7 @@
 
         .main-container { width: 100%; max-width: 480px; padding: 20px; text-align: center; }
         
+        /* PORTADA ORIGINAL UERH */
         .logo-main { 
             font-size: 3.5rem; font-weight: 800; letter-spacing: 0.2em; margin: 0; 
             background: linear-gradient(90deg, #fff, #aaa); 
@@ -36,12 +38,36 @@
             border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
         }
 
-        .btn-google { 
-            background: white; color: black; border: none; display: flex; 
-            align-items: center; justify-content: center; gap: 10px; width: 100%; 
-            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; 
+        /* BOTÓN GOOGLE CON BORDE AZUL Y ROJO (SIN BLANCO) */
+        .btn-google {
+            background: transparent;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
         }
-        
+
+        .btn-google::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(90deg, var(--color-blue), var(--color-red), var(--color-blue), var(--color-red));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+        }
+
         .hidden { display: none !important; }
         .input-field { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; font-size: 1rem; box-sizing: border-box; margin-bottom: 12px; }
         .btn-submit { width: 100%; padding: 15px; background: linear-gradient(90deg, #1d4ed8, #1e40af); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
@@ -130,25 +156,20 @@
     }
 
     firebase.auth().onAuthStateChanged(user => {
-        const authView = document.getElementById('auth-section');
-        const formView = document.getElementById('form-section');
-        const adminView = document.getElementById('admin-panel');
-
         if (user) {
-            authView.classList.add('hidden');
+            document.getElementById('auth-section').classList.add('hidden');
             if (ADMIN_EMAILS.includes(user.email)) {
-                adminView.classList.remove('hidden');
-                formView.classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('form-section').classList.add('hidden');
                 cargarAdmin();
             } else {
-                formView.classList.remove('hidden');
-                adminView.classList.add('hidden');
+                document.getElementById('form-section').classList.remove('hidden');
                 document.getElementById('playerName').value = user.displayName || "";
             }
         } else {
-            authView.classList.remove('hidden');
-            formView.classList.add('hidden');
-            adminView.classList.add('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('admin-panel').classList.add('hidden');
         }
     });
 
@@ -175,23 +196,13 @@
         e.preventDefault();
         const btn = document.getElementById('btn-envio');
         const user = firebase.auth.currentUser;
-        
-        if (!user) {
-            alert("Error: No hay una sesión activa. Por favor reingresa.");
-            location.reload();
-            return;
-        }
+        if (!user) return alert("Sesión no encontrada.");
 
         btn.disabled = true; btn.innerText = "ENVIANDO...";
         
         try {
-            const f1 = document.getElementById('f1').files[0];
-            const f2 = document.getElementById('f2').files[0];
-            
-            if(!f1 || !f2) throw new Error("Debes cargar ambas fotos.");
-
-            const fotoC = await resizeImg(f1);
-            const fotoP = await resizeImg(f2);
+            const fotoC = await resizeImg(document.getElementById('f1').files[0]);
+            const fotoP = await resizeImg(document.getElementById('f2').files[0]);
 
             const datos = {
                 jugadorName: document.getElementById('playerName').value,
@@ -202,12 +213,11 @@
                 email: user.email,
                 fotoCarnet: fotoC,
                 fotoPago: fotoP,
-                estado: "pendiente",
-                fecha: new Date().toISOString()
+                estado: "pendiente"
             };
 
             await firebase.database().ref('inscripciones/' + user.uid).set(datos);
-            alert("✅ ¡Registro completado!");
+            alert("✅ Registro guardado.");
             firebase.auth().signOut();
         } catch (err) {
             alert("Error: " + err.message);
@@ -222,12 +232,9 @@
             snap.forEach(child => {
                 const j = child.val();
                 lista.innerHTML += `<tr>
-                    <td>${j.jugadorName}<br><small>${j.teamName}</small></td>
+                    <td>${j.jugadorName}</td>
                     <td>${j.role} #${j.shirtNum}</td>
-                    <td>
-                        <img src="${j.fotoCarnet}" class="img-table" onclick="window.open(this.src)">
-                        <img src="${j.fotoPago}" class="img-table" onclick="window.open(this.src)">
-                    </td>
+                    <td><img src="${j.fotoCarnet}" class="img-table"> <img src="${j.fotoPago}" class="img-table"></td>
                     <td><button onclick="aprobar('${child.key}')">${j.estado === 'approved' ? '✅' : 'Ok'}</button></td>
                 </tr>`;
             });
@@ -235,7 +242,7 @@
     }
 
     async function aprobar(uid) {
-        if(confirm("¿Aprobar registro?")) {
+        if(confirm("¿Aprobar?")) {
             await firebase.database().ref('inscripciones/' + uid).update({ estado: 'approved' });
         }
     }
